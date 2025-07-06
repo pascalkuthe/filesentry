@@ -1,5 +1,5 @@
-use std::ffi::{OsStr, c_int};
-use std::mem::{MaybeUninit, align_of, size_of};
+use std::ffi::{c_int, OsStr};
+use std::mem::{align_of, size_of, MaybeUninit};
 use std::os::fd::AsRawFd;
 use std::{io, slice};
 
@@ -57,7 +57,7 @@ impl Inotify {
         )
         .map_err(|err| {
             if err == Errno::NOSPC {
-                io::Error::new(io::ErrorKind::ResourceBusy, "exhaused inotify max_user_watches, try increasing the setting or adding stricter glob filter")
+                io::Error::other("exhaused inotify max_user_watches, try increasing the setting or adding stricter glob filter")
             } else {
                 err.into()
             }

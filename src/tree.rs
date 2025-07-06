@@ -496,7 +496,11 @@ impl FileTree {
             let (node, _) = self.apply_change(&change, work_stack, &mut emit_event);
 
             self[node].unset_maybe_deleted_flag();
-            while let Some((node, _)) = work_stack.pop_if(|(_, depth)| *depth >= child.depth()) {
+            while work_stack
+                .last()
+                .is_some_and(|(_, depth)| *depth >= child.depth())
+            {
+                let (node, _) = work_stack.pop().unwrap();
                 for &child in &self.dirs[self[node].children.idx()].clone() {
                     if self.nodes[child.idx()].maybe_deleted_flag() {
                         emit_event(self[child].path.clone(), EventType::Delete);

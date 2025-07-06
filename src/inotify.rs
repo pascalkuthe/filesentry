@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::atomic::{self, AtomicBool};
+use std::sync::Arc;
 use std::{io, thread};
 
 mod sys;

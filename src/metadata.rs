@@ -16,7 +16,7 @@ impl Metadata {
     pub fn for_path(path: &CannonicalPath) -> Option<Metadata> {
         use std::time::Duration;
 
-        use rustix::fs::{FileType, lstat};
+        use rustix::fs::{lstat, FileType};
         use rustix::io::Errno;
 
         let stat = match lstat(path) {

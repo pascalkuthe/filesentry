@@ -1,13 +1,13 @@
 // use pretty_assertions::assert_eq;
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, LazyLock, Mutex, mpsc};
+use std::sync::{mpsc, Arc, LazyLock, Mutex};
 use std::time::Duration;
 
 use tempfile::TempDir;
 
-use crate::Watcher;
 use crate::events::EventType;
+use crate::Watcher;
 
 static TIMEOUT: LazyLock<Duration> =
     LazyLock::new(|| match std::env::var("FILESENTRY_TEST_TIMEOUT") {
@@ -117,7 +117,7 @@ fn init_watcher_slow() -> (TempDir, Watcher) {
 fn init_watcher_imp(slow: bool) -> (TempDir, Watcher) {
     let _ = env_logger::builder().try_init();
     let dir = TempDir::new().unwrap();
-    let watcher = Watcher::new(slow).unwrap();
+    let watcher = Watcher::new_impl(slow).unwrap();
     let (tx, rx) = mpsc::sync_channel(1);
     watcher
         .add_root(dir.path(), true, move |success| {

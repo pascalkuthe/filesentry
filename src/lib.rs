@@ -150,7 +150,11 @@ impl Watcher {
             .push(Box::new(handler));
     }
 
-    pub fn new(#[cfg(test)] slow: bool) -> io::Result<Self> {
+    pub fn new() -> io::Result<Self> {
+        Self::new_impl(false)
+    }
+
+    pub fn new_impl(_slow: bool) -> io::Result<Self> {
         let state = Arc::new(WatcherState {
             config: Mutex::new(Config {
                 filter: Arc::new(()),
@@ -163,7 +167,7 @@ impl Watcher {
             recrawls: AtomicUsize::new(0),
         });
         #[cfg(test)]
-        let watcher = InotifyWatcher::new(slow, state.clone())?;
+        let watcher = InotifyWatcher::new(_slow, state.clone())?;
         #[cfg(not(test))]
         let watcher = InotifyWatcher::new(state.clone())?;
 

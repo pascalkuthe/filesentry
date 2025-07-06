@@ -3,7 +3,7 @@ use std::mem::replace;
 use std::ops::Deref;
 
 use ecow::EcoVec;
-use hashbrown::{DefaultHashBuilder, HashTable, hash_table};
+use hashbrown::{hash_table, DefaultHashBuilder, HashTable};
 
 use crate::path::CannonicalPathBuf;
 
