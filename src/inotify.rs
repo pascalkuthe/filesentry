@@ -9,7 +9,7 @@ use mio::{Poll, Waker};
 use papaya::HashMap;
 
 use crate::inotify::sys::{Event, EventFlags, Inotify, Watch};
-use crate::path::CannonicalPathBuf;
+use crate::path::CanonicalPathBuf;
 use crate::pending::{self, PendingChangesLock};
 use crate::{Filter, WatcherState};
 
@@ -17,7 +17,7 @@ pub(crate) struct InotifyWatcher {
     waker: mio::Waker,
     shutdown: AtomicBool,
     notify: Inotify,
-    watches: HashMap<Watch, CannonicalPathBuf, DefaultHashBuilder>,
+    watches: HashMap<Watch, CanonicalPathBuf, DefaultHashBuilder>,
     pub changes: PendingChangesLock,
 }
 
@@ -78,7 +78,7 @@ impl InotifyWatcher {
         Ok(watcher)
     }
 
-    pub fn watch_dir(&self, path: CannonicalPathBuf) -> io::Result<()> {
+    pub fn watch_dir(&self, path: CanonicalPathBuf) -> io::Result<()> {
         let watch = self.notify.add_directory_watch(&*path)?;
         self.watches.pin().insert(watch, path);
         Ok(())

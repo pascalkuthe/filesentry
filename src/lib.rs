@@ -10,7 +10,7 @@ use crate::config::Config;
 use crate::events::EventDebouncer;
 pub use crate::events::{EventType, Events};
 use crate::inotify::InotifyWatcher;
-pub use crate::path::{CannonicalPath, CannonicalPathBuf};
+pub use crate::path::{CannonicalPath, CanonicalPathBuf};
 use crate::worker::Worker;
 pub use config::Filter;
 
@@ -26,7 +26,7 @@ mod tree;
 mod worker;
 
 struct AddRoot {
-    path: CannonicalPathBuf,
+    path: CanonicalPathBuf,
     recursive: bool,
     notify: Box<dyn FnOnce(bool) + Send>,
 }
@@ -110,7 +110,7 @@ impl Watcher {
             log::warn!("ignoring root {root:?} as it matches the ignore pattern");
             return Ok(());
         }
-        let root = CannonicalPathBuf::assert_cannoncalized(&root);
+        let root = CanonicalPathBuf::assert_canonicalized(&root);
         self.state
             .notifications
             .lock()

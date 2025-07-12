@@ -8,9 +8,9 @@ use std::path::Path;
 use std::slice;
 
 #[cfg(unix)]
-const PATH_SEPERATOR: u8 = b'/';
+const PATH_SEPARATOR: u8 = b'/';
 #[cfg(windows)]
-const PATH_SEPERATOR: u8 = b'\\';
+const PATH_SEPARATOR: u8 = b'\\';
 
 use ecow::EcoVec;
 use memchr::memrchr;
@@ -35,7 +35,7 @@ impl CannonicalPath {
     }
 
     pub fn parent(&self) -> Option<&Path> {
-        let i = memrchr(PATH_SEPERATOR, &self.bytes)?;
+        let i = memrchr(PATH_SEPARATOR, &self.bytes)?;
         // safety: type ensures that self.buf is composition of
         // OsStr (and str but every str is an OsStr) and therefore always
         // valid
@@ -43,13 +43,13 @@ impl CannonicalPath {
         Some(Path::new(path))
     }
 
-    pub fn join(&self, other: &OsStr) -> CannonicalPathBuf {
+    pub fn join(&self, other: &OsStr) -> CanonicalPathBuf {
         if self.is_empty() {
-            let mut res = CannonicalPathBuf::new();
+            let mut res = CanonicalPathBuf::new();
             res.push(other);
             res
         } else {
-            let mut res = CannonicalPathBuf::with_capacity(self.bytes.len() + other.len());
+            let mut res = CanonicalPathBuf::with_capacity(self.bytes.len() + other.len());
             res.buf.extend_from_slice(&self.bytes);
             res.push(other);
             res
@@ -99,7 +99,7 @@ impl CannonicalPath {
     }
 
     pub fn is_parent_of(&self, other: &CannonicalPath) -> bool {
-        other.as_bytes().starts_with(self.as_bytes()) && other.bytes[self.len()] == PATH_SEPERATOR
+        other.as_bytes().starts_with(self.as_bytes()) && other.bytes[self.len()] == PATH_SEPARATOR
     }
 }
 
@@ -108,19 +108,19 @@ impl CannonicalPath {
 /// * only 2 words size reducing memory pressure
 /// * reference counted
 /// * mutation via copy on write
-/// * always cannocialized enabling fast bytewise comparsions
-/// * nevers ends with a path seperator
+/// * always canonicalized enabling fast byte-wise comparisons
+/// * never ends with a path separator
 #[derive(PartialEq, Eq, Clone)]
-pub struct CannonicalPathBuf {
+pub struct CanonicalPathBuf {
     buf: EcoVec<u8>,
 }
 
-impl PartialOrd for CannonicalPathBuf {
+impl PartialOrd for CanonicalPathBuf {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
-impl Ord for CannonicalPathBuf {
+impl Ord for CanonicalPathBuf {
     fn cmp(&self, other: &Self) -> Ordering {
         cmp(&self.buf, &other.buf)
     }
@@ -141,44 +141,44 @@ fn cmp(lhs: &[u8], rhs: &[u8]) -> Ordering {
     if cfg!(unix) {
         prefix_len = prefix_len.saturating_sub(1);
     }
-    // for some reason llvm fails to emti these boundschecks and since we need fast sorting
+    // for some reason llvm fails to emit these bounds checks and since we need fast sorting
     // we use some unsafe
     let lhs_ = unsafe { slice::from_raw_parts(lhs.as_ptr(), prefix_len) };
     let rhs_ = unsafe { slice::from_raw_parts(rhs.as_ptr(), prefix_len) };
     lhs_.cmp(rhs_).then_with(|| match diff.cmp(&0) {
-        Ordering::Less => PATH_SEPERATOR.cmp(unsafe { rhs.get_unchecked(prefix_len) }),
+        Ordering::Less => PATH_SEPARATOR.cmp(unsafe { rhs.get_unchecked(prefix_len) }),
         Ordering::Equal => Ordering::Equal,
-        Ordering::Greater => unsafe { lhs.get_unchecked(prefix_len) }.cmp(&PATH_SEPERATOR),
+        Ordering::Greater => unsafe { lhs.get_unchecked(prefix_len) }.cmp(&PATH_SEPARATOR),
     })
 }
 
-impl CannonicalPathBuf {
-    pub fn new() -> CannonicalPathBuf {
+impl CanonicalPathBuf {
+    pub fn new() -> CanonicalPathBuf {
         Self { buf: EcoVec::new() }
     }
 
-    pub fn assert_cannoncalized(path: &Path) -> CannonicalPathBuf {
+    pub fn assert_canonicalized(path: &Path) -> CanonicalPathBuf {
         let path = path.as_os_str();
         let mut res = Self::new();
         res.push(path);
         res
     }
 
-    // pub fn from_std_path(path: &Path) -> io::Result<CannonicalPathBuf> {
-    //     let cannoncalized = path.canonicalize()?.into_os_string();
-    //     let mut res = Self::with_capacity(cannoncalized.len() + 1);
-    //     res.push(cannoncalized.as_os_str());
+    // pub fn from_std_path(path: &Path) -> io::Result<CanonicalPathBuf> {
+    //     let canonicalized = path.canonicalize()?.into_os_string();
+    //     let mut res = Self::with_capacity(canonicalized.len() + 1);
+    //     res.push(canonicalized.as_os_str());
     //     Ok(res)
     // }
 
-    fn with_capacity(cap: usize) -> CannonicalPathBuf {
+    fn with_capacity(cap: usize) -> CanonicalPathBuf {
         Self {
             buf: EcoVec::with_capacity(cap),
         }
     }
 
     pub fn pop(&mut self) -> bool {
-        let Some(i) = memrchr(PATH_SEPERATOR, &self.bytes) else {
+        let Some(i) = memrchr(PATH_SEPARATOR, &self.bytes) else {
             return false;
         };
         self.buf.truncate(i);
@@ -212,8 +212,8 @@ impl CannonicalPathBuf {
             capacity += 1;
         }
         self.buf.reserve(capacity + 1);
-        if src.as_encoded_bytes().first() != Some(&PATH_SEPERATOR) {
-            self.buf.push(PATH_SEPERATOR);
+        if src.as_encoded_bytes().first() != Some(&PATH_SEPARATOR) {
+            self.buf.push(PATH_SEPARATOR);
         }
         self.buf.extend_from_slice(src.as_encoded_bytes());
         if cfg!(unix) {
@@ -222,13 +222,13 @@ impl CannonicalPathBuf {
     }
 }
 
-impl Default for CannonicalPathBuf {
+impl Default for CanonicalPathBuf {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Deref for CannonicalPathBuf {
+impl Deref for CanonicalPathBuf {
     type Target = CannonicalPath;
 
     fn deref(&self) -> &Self::Target {
@@ -237,13 +237,13 @@ impl Deref for CannonicalPathBuf {
     }
 }
 
-impl Debug for CannonicalPathBuf {
+impl Debug for CanonicalPathBuf {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.as_std_path().fmt(f)
     }
 }
 
-impl Display for CannonicalPathBuf {
+impl Display for CanonicalPathBuf {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.as_std_path().display(), f)
     }
@@ -295,14 +295,14 @@ impl rustix::path::Arg for &CannonicalPath {
 }
 
 // don't include the null terminator for Hash so that we
-// can lookup a normal path aswell
+// can lookup a normal path as well
 impl Hash for CannonicalPath {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.as_bytes().hash(state);
     }
 }
 
-impl Hash for CannonicalPathBuf {
+impl Hash for CanonicalPathBuf {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.as_bytes().hash(state);
     }
@@ -314,7 +314,7 @@ impl<T: AsRef<OsStr>> PartialEq<T> for CannonicalPath {
     }
 }
 
-impl<T: AsRef<OsStr>> PartialEq<T> for CannonicalPathBuf {
+impl<T: AsRef<OsStr>> PartialEq<T> for CanonicalPathBuf {
     fn eq(&self, other: &T) -> bool {
         self.as_os_str() == other.as_ref()
     }

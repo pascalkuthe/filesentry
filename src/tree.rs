@@ -13,7 +13,7 @@ use walkdir::WalkDir;
 use crate::config::Filter;
 use crate::events::EventType;
 use crate::metadata::Metadata;
-use crate::path::CannonicalPathBuf;
+use crate::path::CanonicalPathBuf;
 use crate::pending::{self, PendingChange, PendingChanges};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -72,7 +72,7 @@ pub struct TreeIter<'a> {
 }
 
 impl<'a> Iterator for TreeIter<'a> {
-    type Item = &'a CannonicalPathBuf;
+    type Item = &'a CanonicalPathBuf;
 
     fn next(&mut self) -> Option<Self::Item> {
         self.iter.next().map(|it| &it.path)
@@ -151,10 +151,10 @@ bitflags! {
 
 #[derive(Debug)]
 pub struct FsNode {
-    pub path: CannonicalPathBuf, // 2 words
-    meta: NodeMeta,              // 3 words
-    inode: u64,                  // 1 word
-    flags: Flags,                // 1 word
+    pub path: CanonicalPathBuf, // 2 words
+    meta: NodeMeta,             // 3 words
+    inode: u64,                 // 1 word
+    flags: Flags,               // 1 word
     children: DirId,
 }
 
@@ -193,9 +193,9 @@ impl FileTree {
         &mut self,
         transaction: &mut PendingChanges,
         filter: &dyn Filter,
-        mut emit_event: impl FnMut(CannonicalPathBuf, EventType),
+        mut emit_event: impl FnMut(CanonicalPathBuf, EventType),
         work_stack: &mut Vec<(NodeId, usize)>,
-        mut add_watch: impl FnMut(CannonicalPathBuf),
+        mut add_watch: impl FnMut(CanonicalPathBuf),
     ) {
         let mut transaction = transaction.drain().peekable();
         while let Some(change) = transaction.next() {
@@ -233,12 +233,12 @@ impl FileTree {
         self.dirs[dir.idx()].push(child);
     }
 
-    /// Applys a change to the in-memory file tree
+    /// Applies a change to the in-memory file tree
     pub fn apply_change(
         &mut self,
         change: &PendingChange,
         work_stack: &mut Vec<(NodeId, usize)>,
-        mut emit_event: impl FnMut(CannonicalPathBuf, EventType),
+        mut emit_event: impl FnMut(CanonicalPathBuf, EventType),
     ) -> (NodeId, bool) {
         let fs_meta = Metadata::for_path(&change.path);
 
@@ -341,11 +341,11 @@ impl FileTree {
         }
     }
 
-    pub fn add_root(&mut self, root: CannonicalPathBuf, recursive: bool) -> Option<NodeId> {
+    pub fn add_root(&mut self, root: CanonicalPathBuf, recursive: bool) -> Option<NodeId> {
         self.add(root, recursive, true)
     }
 
-    fn add(&mut self, path: CannonicalPathBuf, recursive: bool, root: bool) -> Option<NodeId> {
+    fn add(&mut self, path: CanonicalPathBuf, recursive: bool, root: bool) -> Option<NodeId> {
         let hash = self.hasher.hash_one(&path);
         let entry = self.path_table.entry(
             hash,
@@ -355,7 +355,7 @@ impl FileTree {
         match entry {
             Entry::Occupied(entry) => {
                 // we only want to add new entries here but if we are a recursive watch
-                // and the target is not being recusively watched then we still have to add it
+                // and the target is not being recursively watched then we still have to add it
                 if !recursive {
                     log::error!("already watching {path:?}");
                     return None;
@@ -420,7 +420,7 @@ impl FileTree {
         &mut self,
         id: NodeId,
         work_stack: &mut Vec<(NodeId, usize)>,
-        mut emit_event: impl FnMut(CannonicalPathBuf, EventType),
+        mut emit_event: impl FnMut(CanonicalPathBuf, EventType),
     ) {
         if self[id].children.is_none() {
             return;
@@ -445,15 +445,15 @@ impl FileTree {
         }
     }
 
-    // (recursively) crawl a direcotry to resynchronize the file tree
+    // (recursively) crawl a directory to re-synchronize the file tree
     // and record any changes observed along the way
     pub fn crawl(
         &mut self,
         root: NodeId,
         filter: &dyn Filter,
         work_stack: &mut Vec<(NodeId, usize)>,
-        mut emit_event: impl FnMut(CannonicalPathBuf, EventType),
-        mut add_watch: impl FnMut(CannonicalPathBuf),
+        mut emit_event: impl FnMut(CanonicalPathBuf, EventType),
+        mut add_watch: impl FnMut(CanonicalPathBuf),
     ) {
         let mut walk_builder = WalkDir::new(self[root].path.as_std_path())
             .follow_links(false)
@@ -481,7 +481,7 @@ impl FileTree {
                 // how to handle that? just ignore?
                 continue;
             };
-            // the root was already analyzsed by the caller dont restat it
+            // the root was already analyzed by the caller don't restart it
             if child.depth() == 0 {
                 continue;
             }
@@ -491,7 +491,7 @@ impl FileTree {
                 }
                 continue;
             }
-            let path = CannonicalPathBuf::assert_cannoncalized(child.path());
+            let path = CanonicalPathBuf::assert_canonicalized(child.path());
             let change = PendingChange { path, flags };
             let (node, _) = self.apply_change(&change, work_stack, &mut emit_event);
 
@@ -535,7 +535,7 @@ impl FileTree {
         root: NodeId,
         recursive: bool,
         filter: &dyn Filter,
-        mut add_watch: impl FnMut(CannonicalPathBuf),
+        mut add_watch: impl FnMut(CanonicalPathBuf),
     ) {
         let mut walk = WalkDir::new(self[root].path.as_std_path())
             .follow_links(false)
@@ -560,7 +560,7 @@ impl FileTree {
                 }
                 continue;
             }
-            let path = CannonicalPathBuf::assert_cannoncalized(child.path());
+            let path = CanonicalPathBuf::assert_canonicalized(child.path());
             if let Some(node) = self.add(path.clone(), recursive, false) {
                 if self[node].meta.is_dir() && recursive {
                     add_watch(self[node].path.clone())

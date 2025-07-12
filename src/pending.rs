@@ -7,7 +7,7 @@ use bitflags::bitflags;
 use hashbrown::hash_table::Entry;
 use hashbrown::{DefaultHashBuilder, HashTable};
 
-use crate::path::CannonicalPathBuf;
+use crate::path::CanonicalPathBuf;
 
 bitflags! {
     #[derive(Clone, Copy, Debug)]
@@ -15,7 +15,7 @@ bitflags! {
         /// for directories: do a recursive crawl
         const NEEDS_RECURSIVE_CRAWL = 1;
         /// for directories: do a non-recursive crawl, some watchers (fsevent)
-        /// only report that *something* changed in a dricetory but not what,
+        /// only report that *something* changed in a directory but not what,
         /// it's our job to stat.
         const NEEDS_NON_RECURSIVE_CRAWL = 2;
         /// flag set during recursive watch to indicate that nodes should be marked recursive
@@ -71,7 +71,7 @@ impl PendingChangesLock {
 
 #[derive(Clone, Debug)]
 pub struct PendingChange {
-    pub path: CannonicalPathBuf,
+    pub path: CanonicalPathBuf,
     pub flags: Flags,
 }
 
@@ -149,7 +149,7 @@ impl PendingChanges {
 
     pub fn add_watcher(
         &mut self,
-        path: CannonicalPathBuf,
+        path: CanonicalPathBuf,
         /* timestamp: SystemTime, */ flags: Flags,
     ) {
         self.add(PendingChange {
