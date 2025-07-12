@@ -5,7 +5,7 @@ use std::ops::Deref;
 use ecow::EcoVec;
 use hashbrown::{hash_table, DefaultHashBuilder, HashTable};
 
-use crate::path::CannonicalPathBuf;
+use crate::path::CanonicalPathBuf;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, PartialOrd, Ord)]
 pub enum EventType {
@@ -16,7 +16,7 @@ pub enum EventType {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Event {
-    pub path: CannonicalPathBuf,
+    pub path: CanonicalPathBuf,
     pub ty: EventType,
 }
 
@@ -36,7 +36,7 @@ impl EventDebouncer {
         }
     }
 
-    pub fn add(&mut self, path: CannonicalPathBuf, ty: EventType) {
+    pub fn add(&mut self, path: CanonicalPathBuf, ty: EventType) {
         let entry = self.table.entry(
             self.hasher.hash_one(&path),
             |&i| self.events[i as usize].path == path,
@@ -47,7 +47,7 @@ impl EventDebouncer {
                 let i = *entry.get() as usize;
                 let event = &mut self.events.make_mut()[i];
                 match (event.ty, ty) {
-                    // temporary file that was created and immidiately removed
+                    // temporary file that was created and immediately removed
                     (EventType::Create, EventType::Delete) => {
                         entry.remove();
                     }

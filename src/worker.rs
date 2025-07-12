@@ -62,7 +62,7 @@ impl Worker {
                     continue;
                 };
                 if let Err(err) = self.watcher.notify.watch_dir(root.path.clone()) {
-                    log::error!("faild to watch {:?}: {err}", root.path);
+                    log::error!("failed to watch {:?}: {err}", root.path);
                     (root.notify)(false);
                     continue;
                 }
@@ -70,7 +70,7 @@ impl Worker {
                 self.tree
                     .crawl_root(node, root.recursive, &*filter, |path| {
                         if let Err(err) = self.watcher.notify.watch_dir(path.clone()) {
-                            log::error!("faild to watch {path:?}: {err}")
+                            log::error!("failed to watch {path:?}: {err}")
                         }
                     });
                 let i = self
@@ -94,12 +94,12 @@ impl Worker {
 
     pub fn run(mut self) {
         loop {
-            let setteled = self.wait_for_changes();
+            let settled = self.wait_for_changes();
             if self.watcher.notify.is_shutdown() {
                 break;
             }
             self.process_notifications();
-            if setteled {
+            if settled {
                 let events = self.events.take();
                 self.watcher
                     .state
@@ -126,7 +126,7 @@ impl Worker {
                         |path, ty| self.events.add(path, ty),
                         |path| {
                             if let Err(err) = self.watcher.notify.watch_dir(path.clone()) {
-                                log::error!("faild to watch {path:?}: {err}")
+                                log::error!("failed to watch {path:?}: {err}")
                             }
                         },
                     );
@@ -140,7 +140,7 @@ impl Worker {
                 &mut self.work_stack,
                 |path| {
                     if let Err(err) = self.watcher.notify.watch_dir(path.clone()) {
-                        log::error!("faild to watch {path:?}: {err}")
+                        log::error!("failed to watch {path:?}: {err}")
                     }
                 },
             );
