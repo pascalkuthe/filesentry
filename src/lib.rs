@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use crate::config::Config;
 use crate::events::EventDebouncer;
-pub use crate::events::{EventType, Events};
+pub use crate::events::{Event, EventType, Events};
 use crate::inotify::InotifyWatcher;
 pub use crate::path::{CannonicalPath, CanonicalPathBuf};
 use crate::worker::Worker;

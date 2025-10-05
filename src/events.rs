@@ -12,6 +12,9 @@ pub enum EventType {
     Create,
     Delete,
     Modified,
+    /// a file that was added and removed again immedietly
+    /// (within the settle period) can usually be ignored
+    Tempfile,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -51,6 +54,8 @@ impl EventDebouncer {
                     (EventType::Create, EventType::Delete) => {
                         entry.remove();
                     }
+                    // temporary file that was created and immidiately removed
+                    (EventType::Create, EventType::Delete) => event.ty = EventType::Tempfile,
                     (_, EventType::Delete) => {
                         event.ty = EventType::Delete;
                     }
