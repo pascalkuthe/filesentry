@@ -367,7 +367,8 @@ impl FileTree {
                     return None;
                 }
                 if self[id].flags.contains(Flags::RECURSIVE) {
-                    log::error!("already watching {path:?}");
+                    log::error!("already watching recursively {path:?}");
+                    return None;
                 }
                 self[id].flags.insert(Flags::RECURSIVE);
                 Some(id)

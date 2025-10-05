@@ -78,15 +78,25 @@ impl Worker {
                     .partition_point(|&(it, _)| self.tree[it].path < root.path);
                 if root.recursive {
                     // for recursive roots remove any roots that are children
-                    // to avoid duplicate crawls
-                    let end = self.roots[i..]
+                    // and not ignored to avoid duplicate crawls
+                    let mut end = self.roots[i..]
                         .iter()
                         .position(|&(it, _)| !root.path.is_parent_of(&self.tree[it].path))
                         .unwrap_or(self.roots.len());
-                    self.roots.splice(i..end, [(node, root.recursive)]);
-                } else {
-                    self.roots.insert(i, (node, root.recursive));
+                    let mut j = i;
+                    while j < end {
+                        if filter.ignore_path_rec(
+                            self.tree[self.roots[j].0].path.as_std_path(),
+                            Some(true),
+                        ) {
+                            j += 1;
+                        } else {
+                            self.roots.remove(j);
+                            end -= 1;
+                        }
+                    }
                 };
+                self.roots.insert(i, (node, root.recursive));
                 (root.notify)(true);
             }
         }
