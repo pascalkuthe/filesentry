@@ -50,10 +50,6 @@ impl EventDebouncer {
                 let i = *entry.get() as usize;
                 let event = &mut self.events.make_mut()[i];
                 match (event.ty, ty) {
-                    // temporary file that was created and immediately removed
-                    (EventType::Create, EventType::Delete) => {
-                        entry.remove();
-                    }
                     // temporary file that was created and immidiately removed
                     (EventType::Create, EventType::Delete) => event.ty = EventType::Tempfile,
                     (_, EventType::Delete) => {
