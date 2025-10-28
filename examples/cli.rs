@@ -152,6 +152,7 @@ pub fn main() -> Result<(), lexopt::Error> {
                 EventType::Create => println!("{:?} create", event.path),
                 EventType::Delete => println!("{:?} delete", event.path),
                 EventType::Modified => println!("{:?} modify", event.path),
+                EventType::Tempfile => println!("{:?} tempfile", event.path),
             }
         }
         true
